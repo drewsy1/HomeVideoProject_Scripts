@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" attributeFormDefault="unqualified" elementFormDefault="qualified" targetNamespace="http://www2.latech.edu/~aew027/" 
+    xmlns="http://www2.latech.edu/~aew027/">
+    <xs:annotation>
+        <xs:documentation xml:lang="en">
+            Outline of contents of Westgate home video DVDs.
+        </xs:documentation>
+    </xs:annotation>
+
+    <xs:element name="HomeVideoLibrary" type="HomeVideoLibraryForm" />
+
+    <xs:complexType name="HomeVideoLibraryForm">
+        <xs:sequence>
+            <xs:element name="HomeVideoDVD" type="HomeVideoDVDForm" />
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="HomeVideoDVDForm">
+        <xs:sequence>
+            <xs:element name="DateBurned" type="xs:dateTime" />
+            <xs:element name="DateRipped" type="xs:dateTime" />
+            <xs:element name="DVDChapters" type="DVDChaptersForm" />
+        </xs:sequence>
+        <xs:attribute name="DVDLabel" type="xs:string" />
+    </xs:complexType>
+
+    <xs:complexType name="DVDChaptersForm">
+        <xs:sequence>
+            <xs:element name="DVDChapter" type="DVDChapterForm" minOccurs="0" maxOccurs="unbounded" />
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="DVDChapterForm">
+        <xs:sequence>
+            <xs:element name="DVDChapterLength" type="xs:duration" />
+            <xs:element name="VideoClips" type="VideoClipsForm" />
+        </xs:sequence>
+        <xs:attribute name="DVDChapterNumber" type="xs:integer" use="required" />
+    </xs:complexType>
+
+    <xs:complexType name="VideoClipsForm">
+        <xs:sequence>
+            <xs:element name="VideoClip" type="VideoClipForm" minOccurs="0" maxOccurs="unbounded" />
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="VideoClipForm">
+        <xs:sequence>
+            <xs:element name="ClipStart" type="TimeStamp" />
+            <xs:element name="ClipEnd" type="TimeStamp" />
+            <xs:element name="ClipLength" type="xs:duration" />
+            <xs:element name="DateRecorded" type="xs:date" />
+            <xs:element name="TimeRecordedStart" type="xs:time" />
+            <xs:element name="TimeRecordedEnd" type="xs:time" />
+            <xs:element name="Description" type="xs:string" />
+            <xs:element name="People" type="PeopleForm" />
+            <xs:element name="CameraOperator" type="PeopleForm" />
+            <xs:element name="Collections" type="CollectionsForm" />
+        </xs:sequence>
+        <xs:attribute name="ClipNumber" type="xs:integer" use="required" />
+    </xs:complexType>
+
+    <xs:complexType name="PeopleForm">
+        <xs:sequence>
+            <xs:element name="Person" type="xs:string" minOccurs="0" maxOccurs="unbounded" />
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="CollectionsForm">
+        <xs:sequence>
+            <xs:element name="Collection" type="xs:string" minOccurs="0" maxOccurs="unbounded" />
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:simpleType name="TimeStamp">
+        <xs:restriction base="xs:string">
+            <xs:pattern value="[0-9]{2}:[0-9]{2}:[0-9]{2}.[0-9]+"/>
+        </xs:restriction>
+    </xs:simpleType>
+</xs:schema>

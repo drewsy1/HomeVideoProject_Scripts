@@ -1,0 +1,33 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<HomeVideoLibrary xmlns="http://www2.latech.edu/~aew027/" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www2.latech.edu/~aew027/ HomeVideoDVD_Schema.xsd">
+	<HomeVideoDVD DVDLabel="">
+		<DateBurned></DateBurned>
+		<DateRipped></DateRipped>
+		<DVDChapters>
+			<DVDChapter DVDChapterNumber="">
+				<DVDChapterLength></DVDChapterLength>
+				<VideoClips>
+					<VideoClip ClipNumber="">
+						<ClipStart></ClipStart>
+						<ClipEnd></ClipEnd>
+						<ClipLength></ClipLength>
+						<DateRecorded></DateRecorded>
+						<TimeRecordedStart></TimeRecordedStart>
+						<TimeRecordedEnd></TimeRecordedEnd>
+						<Description></Description>
+						<People>
+							<Person></Person>
+						</People>
+						<Collections>
+							<Collection></Collection>
+						</Collections>
+						<CameraOperator>
+							<Person></Person>
+						</CameraOperator>
+					</VideoClip>
+				</VideoClips>
+			</DVDChapter>
+		</DVDChapters>
+	</HomeVideoDVD>
+</HomeVideoLibrary>
