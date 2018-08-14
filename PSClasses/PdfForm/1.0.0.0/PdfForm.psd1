@@ -31,7 +31,11 @@ FunctionsToExport = @(
 RequiredAssemblies = @('itextsharp.dll')
 
 # Cmdlets to export from this module
-CmdletsToExport = @(*)
+CmdletsToExport = @(
+    'Find-ITextSharpLibrary',
+    'Get-PdfFieldNames',
+    'Save-PdfField'
+)
 
 # Variables to export from this module
 VariablesToExport = @()

@@ -210,21 +210,21 @@ function Export-ClipsFromHomeVideoChapter
         $Description = $_.Description
         $FileInput = (Get-Item $VideoFile).FullName
         $People = $($_.People -join '" "')
-        $TimeEnd = $_.DateTimeRecordedEnd.ToString("HH\:MM\:ss")
+        $TimeStart = $_.ClipStart.ToString("hh\:mm\:ss\.fff")
+        $TimeEnd = $_.ClipLength.ToString("hh\:mm\:ss\.fff")
         $Timestamp = $_.DateTimeRecordedStart.ToString("s")
-        $TimeStart = $_.DateTimeRecordedStart.ToString("HH\:MM\:ss")
-        $Title = $_.DateRecordedString+" - "+$Description
-        $TitleSort = $Date+"_"+$TimeStart+"_"+$TimeEnd+"_"+$Description
+        $Title = $Description
+        $TitleSort = $Date+"_"+$_.DateTimeRecordedStart.ToString("hh\-mm\-ss")+"_"+$_.DateTimeRecordedEnd.ToString("hh\-mm\-ss")+"_"+$Description
 
-        $FileOutput = Join-Path (Get-Item $OutputFolder).FullName "$($TitleSort -replace '"|\&|\s','').mp4"
+        $FileOutput = Join-Path (Get-Item $OutputFolder).FullName "$($TitleSort -replace '"|\&','').mp4"
 
         $ffmpegArgs = @(
             "-y",
             "-ss $TimeStart",
+            "-t $TimeEnd",
             "-i `"$FileInput`"",
             "-codec:a:0 copy",
             "-vcodec copy",
-            "-to $TimeEnd",
             "-timestamp `"$Timestamp`"",
             "-metadata:s:a:0 language=eng"
             "`"$FileOutput`""
@@ -255,7 +255,7 @@ function Export-ClipsFromHomeVideoChapter
 
         Start-Process "ffmpeg" -ArgumentList $ffmpegArgs -Wait -NoNewWindow
         Start-Process "python" -ArgumentList $PythonArgs -Wait -RedirectStandardError 'SetMP4Metadata.log'
-        (Get-Item $CurrentClipOutput_File).CreationTime = ([dateTime]($ClipXML.DateRecorded) + (($ClipXML.TimeRecordedStart)))
+        (Get-Item $FileOutput).CreationTime = $_.DateTimeRecordedStart
     }
 }
 
@@ -435,8 +435,8 @@ function New-TSPairsCSV
     #>
     [CmdletBinding()]
     param(
-        [string]$Csv = (Join-Path (Get-Item $Path).FullName "$((Get-Item $Path).BaseName).csv"),
-        [string]$Path
+        [string]$Path,
+        [string]$Csv = (Join-Path (Get-Item $Path).FullName "$((Get-Item $Path).BaseName).csv")
     )
 
     $Items = Get-ChildItem (Join-Path $Path "Scene Snapshots") -Name -Include *.png
@@ -527,16 +527,16 @@ function New-FrameImage
     )
 
     $VideoFile = Get-Item $VideoPath
-    if ($Timestamp -match '\d{2}\:\d{2}\:\d{2}\.\d+') { $Timestamp = ([timespan]$Timestamp).TotalSeconds.ToString("####0.0000") }
-    elseif ($Timestamp -match '\d+\.\d+') { $Timestamp = ([timeSpan]::FromSeconds([float]$Timestamp)).TotalSeconds.ToString("####0.0000") }
+    if ($Timestamp -match '\d{2}\:\d{2}\:\d{2}\.\d+') { $Timestamp = ([timespan]$Timestamp).TotalSeconds.ToString("####0.00000") }
+    elseif ($Timestamp -match '\d+\.\d+') { $Timestamp = ([timeSpan]::FromSeconds([float]$Timestamp)).TotalSeconds.ToString("####0.00000") }
 
     if (!$OutputPNG) { $OutputPNG = Join-Path (Join-Path $VideoFile.DirectoryName "Scene Snapshots") "$Timestamp.png"}
 
-    $FFMpegArgs = ("-ss $Timestamp", "-i `"$VideoPath`"", '-vframes 1', '-vsync drop', '-y', "`"$OutputPNG`"")
-    if (!$Force) { $FFMpegArgs = ($FFMpegArgs[(0..3) + 5] -join " ") }
+    $FFMpegArgs = ("-ss $Timestamp", "-i `"$VideoPath`"", '-vframes 1', '-vsync drop', '-vcodec png', '-y', "`"$OutputPNG`"")
+    if (!$Force) { $FFMpegArgs = ($FFMpegArgs[(0..4) + 6] -join " ") }
     else { $FFMpegArgs = $FFMpegArgs -join " " }
     Write-Verbose $FFMpegArgs
-    try {Start-Process ffmpeg -ArgumentList $FFMpegArgs -Wait}
+    try {Start-Process "C:\ProgramData\chocolatey\lib\ffmpeg\tools\ffmpeg\bin\ffmpeg.exe" -ArgumentList $FFMpegArgs -Wait}
     catch { Start-Process "/usr/local/bin/ffmpeg" -ArgumentList $FFMpegArgs -Wait}
 }
 

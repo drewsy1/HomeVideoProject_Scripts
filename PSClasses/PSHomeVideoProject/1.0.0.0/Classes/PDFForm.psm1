@@ -1,13 +1,13 @@
 #Import-Module (Join-Path $PSScriptRoot "PDFForm.ps1") -Force
 $ModuleFolder = (Get-Item $script:MyInvocation.MyCommand.Path).Directory
 $PSClassesChildren = $ModuleFolder.Parent.Parent.Parent.FullName | Get-ChildItem -Recurse
-$iTextSharpDLLPath = $PSClassesChildren | Where-Object -Property Name -Match 'itextsharp.dll' | Select-Object -ExpandProperty FullName
+$iTextSharpDLL = $PSClassesChildren | Where-Object -Property Name -Match 'itextsharp.dll' | Select-Object -ExpandProperty FullName
 $PdfFormModule = $PSClassesChildren | Where-Object -Property Name -Match 'PdfForm.psd1' | Select-Object -ExpandProperty FullName
 $ClipMetadataWorksheetFile = Get-ChildItem $ModuleFolder.Parent.FullName | Where-Object -Property Name -Match 'ClipMetadataWorksheet' | Select-Object -ExpandProperty FullName
 
 class PDFClipForm
 {
-    static [string]$iTextSharpDLLPath = $iTextSharpDLLPath
+    static [string]$iTextSharpDLLPath = $iTextSharpDLL
     [string]$StartTimeString
     [string]$StartTimestampString
     [string]$EndTimeString
@@ -193,7 +193,7 @@ class PDFClipForm
 class PDFForm
 {
     static [string]$PDFTemplate = $ClipMetadataWorksheetFile
-    static [string]$iTextSharpDLLPath = $iTextSharpDLLPath
+    static [string]$iTextSharpDLLPath = $iTextSharpDLL
     hidden [object]$Module = (Import-Module $PdfFormModule -Force)
     [string]$VideoNumber
     [string]$Reviewer
@@ -285,6 +285,6 @@ class PDFForm
     {
         Add-Type -Path ([PDFForm]::iTextSharpDLLPath)
         $OutputFile = $this.GetHashtable()
-        Save-PdfField -Fields $OutputFile -InputPdfFilePath ([PDFForm]::PDFTemplate) -OutputPdfFilePath $PDF -ITextSharpLibrary [PDFForm]::iTextSharpDLLPath
+        Save-PdfField -Fields $OutputFile -InputPdfFilePath ([PDFForm]::PDFTemplate) -OutputPdfFilePath $PDF -ITextSharpLibrary ([PDFForm]::iTextSharpDLLPath)
     }
 }
