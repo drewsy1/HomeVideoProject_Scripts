@@ -3,9 +3,7 @@ using module "C:\Users\dreww\src\Git\HomeVideoProject_Scripts\PSClasses\PSHomeVi
 
 param(
     [string]$XMLFolder = "E:\OneDrive\HomeVideosProject\XML",
-    [string]$DVDLabel = "1994-02_1996-12",
-    [int[]]$Chapters = (3),
-    [string]$ChaptersFolder = "E:\OneDrive\HomeVideosProject\Chapters_5_GeneratePDFs"
+    [string]$DVDLabel = "1994-02_1996-12"
 )
 
 $VerbosePreference = 2
@@ -14,11 +12,7 @@ Import-Module "C:\Users\dreww\src\Git\HomeVideoProject_Scripts\PSClasses\PSHomeV
 $XMLFile = Join-Path $XMLFolder "$DVDLabel.xml"
 $HomeVideo = [HomeVideo_DVD]::new([xml](Get-Content $XMLFile))
 
-$Chapters | ForEach-Object {
-    $Chapter = $_
-    $CurrentChapter = $HomeVideo.DVDChapters | Where-Object -Property ChapterNumber -eq $Chapter
-    $CurrentChapter.CreatePDFs((Join-Path $ChaptersFolder "$($DVDLabel)_$($Chapter)\PDF Forms"),$DVDLabel,$Chapter)
-}
+return $HomeVideo
 
 #Export-ClipsFromHomeVideoChapter -HomeVideo_DVD $HomeVideo -HomeVideo_Chapter $HomeVideo.DVDChapters[0] -OutputFolder "M:\Home Movies" -VideoFile "E:\OneDrive\HomeVideosProject\Chapters_7_ClipSplittingMetadataEmbedding\$($DVDLabel)_$($Chapter)\$($DVDLabel)_$($Chapter).mp4"
 #$HomeVideo.AddDVDChapter([HomeVideo_Chapter]::new("$Chapter","00:00:06:21.398"))

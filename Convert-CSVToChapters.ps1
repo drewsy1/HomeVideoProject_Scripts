@@ -3,8 +3,8 @@ using module "C:\Users\dreww\src\Git\HomeVideoProject_Scripts\PSClasses\PSHomeVi
 
 param(
     [string]$XMLFolder = "E:\OneDrive\HomeVideosProject\XML",
-    [string]$DVDLabel = "1999-02_1999-06",
-    [int[]]$Chapters = (3),
+    [string]$DVDLabel = "1999-11_2000-04",
+    [int[]]$Chapters = (1,2),
     [string]$ChaptersFolder = "E:\OneDrive\HomeVideosProject\Chapters_5_GeneratePDFs"
 )
 
