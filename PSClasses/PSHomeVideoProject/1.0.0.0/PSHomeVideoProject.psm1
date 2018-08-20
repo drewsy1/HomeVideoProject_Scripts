@@ -221,8 +221,8 @@ function Export-ClipsFromHomeVideoChapter
         $ffmpegArgs = @(
             "-y",
             "-ss $TimeStart",
-            "-t $TimeEnd",
             "-i `"$FileInput`"",
+            "-t $TimeEnd",
             "-codec:a:0 copy",
             "-vcodec copy",
             "-timestamp `"$Timestamp`"",
@@ -439,8 +439,8 @@ function New-TSPairsCSV
         [string]$Csv = (Join-Path (Get-Item $Path).FullName "$((Get-Item $Path).BaseName).csv")
     )
 
-    $Items = Get-ChildItem (Join-Path $Path "Scene Snapshots") -Name -Include *.png
-    $ItemsFloat = ($Items | ForEach-Object { [float]($_ -replace '(?:_\d|)\.png', '') } | Sort-Object)
+    $Items = Get-ChildItem (Join-Path $Path "Scene Snapshots") -Name -Include *.png,*.jpg
+    $ItemsFloat = ($Items | ForEach-Object { [float]($_ -replace '(?:_\d|)(?:\.png|\.jpg)', '') } | Sort-Object)
     $SortedPairs = foreach ($i in (0..($ItemsFloat.Count - 1) | Where-Object {(($_ % 2) -eq 0) -or ($_ -eq 0)}))
     {
         (, ($ItemsFloat[$i], $ItemsFloat[$i + 1]))
