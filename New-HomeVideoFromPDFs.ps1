@@ -2,8 +2,8 @@
 using module "C:\Users\dreww\src\Git\HomeVideoProject_Scripts\PSClasses\PSHomeVideoProject\1.0.0.0\Classes\HomeVideo.psm1"
 
 param(
-    [string]$DVDLabel = "1997-10_1998-03",
-    [int[]]$Chapters = (1..2),
+    [string]$DVDLabel = "1994-02_1996-12",
+    [int[]]$Chapters = (1..6),
     [string]$XMLFolder = "E:\OneDrive\HomeVideosProject\XML",
     [string]$ChaptersFolder = "E:\OneDrive\HomeVideosProject\Chapters_7_ClipSplittingMetadataEmbedding"
 )
@@ -20,7 +20,9 @@ $Chapters | ForEach-Object {
     $CurrentChapter.ChapterClips = $null
     $PDFFiles = Get-ChildItem (Join-Path $ChaptersFolder "$($DVDLabel)_$($Chapter)\PDF Forms") | Select -ExpandProperty FullName
     $PDFFiles | %{ $CurrentChapter.AddClipsFromPDF($_) }
+    $CurrentChapter.ChapterClips = $CurrentChapter.ChapterClips | Sort-Object {[int]($_.ClipNumber)}
 }
+
 $HomeVideo.ToXML().Save($XMLFile)
 
 return $HomeVideo
