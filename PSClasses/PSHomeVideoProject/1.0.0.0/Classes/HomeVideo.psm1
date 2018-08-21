@@ -335,6 +335,7 @@ class HomeVideo_Chapter
 
                 Write-Verbose $OutputPath
                 $PDFForm.WriteToPDF($OutputPath)
+                Get-Item $OutputPath
             }
         }
 
@@ -361,6 +362,7 @@ class HomeVideo_Chapter
             $PDFForm.ClipForm1.SetCollectionsHashFromArray()
 
             $PDFForm.WriteToPDF($OutputPath)
+            Get-Item $OutputPath
         }
     }
 }
