@@ -32,9 +32,9 @@
         "Convert-Times",
         "New-PDFWorksheetsFromClips",
         "New-TSPairsCSV",
-        "New-PDFsFromScenes",
+        #"New-PDFsFromScenes",
         "New-FrameImage",
-        "New-PDFsFromXML",
+        "Convert-XMLScenesToPDFs",
         "Export-ClipsFromHomeVideoChapter"
     )
 
@@ -48,7 +48,7 @@
         #"Convert-PTSToSecondsString",
         "Get-ffmpegSceneChanges",
         #"Convert-Times",
-        "New-PDFWorksheetsFromClips",
+        #"New-PDFWorksheetsFromClips",
         "New-TSPairsCSV"
         #"New-PDFsFromScenes",
         #"New-FrameImage"

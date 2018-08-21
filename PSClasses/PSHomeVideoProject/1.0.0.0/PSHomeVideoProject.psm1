@@ -166,33 +166,37 @@ function Get-VideoDuration
 
 function Export-ClipsFromHomeVideoChapter
 {
-    #TODO Export-ClipsFromHomeVideoChapter Documentation
     <#
         .SYNOPSIS
+        Splits desired video into the clips described in a HomeVideo_Chapter object, then applies metadata to them.
 
         .DESCRIPTION
+        Uses metadata from HomeVideo_DVD and HomeVideo_Chapter to define clip segments in a chapter video file, then uses ffmpeg to split the chapter video file into those segments and apply metadata to them.
 
         .PARAMETER HomeVideo_DVD
+        HomeVideo_DVD object containing the desired HomeVideo_Chapter object.
 
         .PARAMETER HomeVideo_Chapter
+        HomeVideo_Chapter object describing all clip metadata for the input VideoFile.
 
         .PARAMETER OutputFolder
+        String representing the path to the desired output folder for split/exported clips.
 
         .PARAMETER VideoFile
+        String representing the path to the video file to be split.
 
         .EXAMPLE
+        Export-ClipsFromHomeVideoChapter -HomeVideo_DVD $DVD -HomeVideo_Chapter $DVD.DVDChapters[0] -OutputFolder "M:\Home Movies" -VideoFile "E:\OneDrive\HomeVideosProject\Chapters_7_ClipSplittingMetadataEmbedding\2000-11_2001-01_4\2000-11_2001-01_4.mp4"
+        Uses metadata contained in a HomeVideo_DVD object ($DVD) and its first chapter ($DVD.DVDChapters[0]) to split a video file ("..\2000-11_2001-01_4.mp4") into separate clips and apply metadata to them. These separate clips are then exported to "M:\HomeMovies"
 
-        .INPUTS
-
-        .OUTPUTS
     #>
 
     [CmdletBinding()]
     param(
-        $HomeVideo_DVD,
-        $HomeVideo_Chapter,
-        $OutputFolder,
-        $VideoFile
+        [HomeVideo_DVD]$HomeVideo_DVD,
+        [HomeVideo_Chapter]$HomeVideo_Chapter,
+        [string]$OutputFolder,
+        [string]$VideoFile
     )
 
     $HomeVideo_Chapter.ChapterClips | ForEach-Object {
@@ -249,7 +253,6 @@ function Export-ClipsFromHomeVideoChapter
         )
         Write-Verbose "      CurrentClip SetMP4Metadata Arguments:"
         $SetMP4Metadata | ForEach-Object { Write-Verbose "       $_" }
-
         
         $PythonArgs = "`"$SetMP4MetadataPy`" " + ($SetMP4Metadata -join " ")
 
@@ -391,47 +394,80 @@ function Get-ffmpegSceneChanges
 
 function Convert-Times
 {
-    #TODO Convert-Times Documentation
     <#
         .SYNOPSIS
+        Converts time formats into a standard "hh:mm:ss.fff" format.
 
         .DESCRIPTION
+        Converts time formats (represented as a string) into a standard "hh:mm:ss.fff" format (output as a string).
 
         .PARAMETER InputTime
+        String representing the time to be converted.
 
         .EXAMPLE
+        PS C:> "33.21","00:12:32" | Convert-Times
+        00:00:33.210
+        00:12:32.000
+
+        .EXAMPLE
+        PS C:> Convert-Times "33.21"
+        00:00:33.210
 
         .INPUTS
+        System.String
+        Accepts a string representing the time to be converted.
 
         .OUTPUTS
+        System.String
+        Outputs a string representing the input time in a standard "hh:mm:ss.fff" format.
     #>
     param(
-        [string]$InputTime
+        [parameter(ValueFromPipeline)][string]$InputTime
     )
 
-    if ($InputTime -match '\d+\.\d+') { $OutputTime = [timeSpan]::FromSeconds([float]$InputTime) }
-    else { $OutputTime = [timeSpan]$InputTime }
-
-    $OutputTime.ToString("hh\:mm\:ss\.fff") 
+    process{
+        if ($InputTime -match '\d+\.\d+') { $OutputTime = [timeSpan]::FromSeconds([float]$InputTime) }
+        else { $OutputTime = [timeSpan]$InputTime }
+    
+        $OutputTime.ToString("hh\:mm\:ss\.fff") 
+    }
 }
 
 function New-TSPairsCSV
 {
-    #TODO New-TSPairsCSV Documentation
     <#
         .SYNOPSIS
+        Generates a CSV file containing start/end times of clips from screenshots in a chapter's "Scene Snapshots" folder.
 
         .DESCRIPTION
+        Accepts a chapter folder's path and the path to an output CSV. Searches for all .png and .jpg images in the "Scene Snapshots" folder within the chapter folder. These images should be named using the timestamp at which they occur in the chapter's video, in "ss.fff" format (total seconds, then milliseconds). The images are sorted by name and grouped into pairs (denoting the beginning/end of scenes). Each pair is then output to the CSV file along with an index representing their scene number within the chapter video, as well as to standard output.
 
         .PARAMETER Csv
+        System.String
+        String representing the desired output CSV's path. Defaults to a file in the root of the chapter folder's path ($Path).
 
         .PARAMETER Path
+        System.String
+        String representing the path of the chapter video's parent directory.
 
         .EXAMPLE
+        PS C:\> New-TSPairsCSV -Path "E:\OneDrive\HomeVideosProject\Chapters_7_ClipSplittingMetadataEmbedding\1994-02_1996-12_2"
 
-        .INPUTS
+        Index    Start      End
+        -----    -----      ---
+            1 11.67833 620.2529
+            2 620.2863  841.874
+            3  841.908 925.7582
+            4 925.7916  1014.08
+            5 1017.683 1017.717
+            6 1019.118  1677.91
+            7 1677.943 1733.498
+
+        Also outputs a CSV representation of the above objects.
 
         .OUTPUTS
+        System.Object[]
+        Array of PSCustomObjects representing Index, Start & End times of scenes. This array is also tee'd into a CSV file.
     #>
     [CmdletBinding()]
     param(
@@ -450,74 +486,45 @@ function New-TSPairsCSV
     $SortedPairsObject
 }
 
-function New-PDFsFromScenes
-{
-    #TODO New-PDFsFromScenes Documentation
-    <#
-        .SYNOPSIS
-
-        .DESCRIPTION
-
-        .PARAMETER VideoPath
-
-        .EXAMPLE
-
-        .INPUTS
-
-        .OUTPUTS
-    #>
-    param(
-        [string]$VideoPath
-    )
-
-    $VideoFile = Get-Item $VideoPath
-
-    $VideoPath = $VideoFile.FullName
-    Write-Verbose $VideoPath
-
-    if ($VideoFile.PSParentPath -notmatch $VideoFile.BaseName) {$VideoFileDirectory = (Join-Path $VideoFile.PSParentPath $VideoFile.BaseName) -replace '.*::', ''}
-    else {$VideoFileDirectory = ($VideoFile.PSParentPath -replace '.*::', '')}
-    Write-Verbose $VideoFileDirectory
-
-    if ($VideoFile.BaseName -notmatch $VideoFile.PSParentPath.BaseName)
-    {
-        if (!(Test-Path $VideoFileDirectory)) { New-Item -ItemType Directory $VideoFileDirectory}
-        $VideoFile = Move-Item -Path $VideoFile -Destination $VideoFileDirectory -PassThru
-        $VideoPath = $VideoFile.FullName
-    }
-
-    $VideoFileSceneCSV = (Join-Path $VideoFileDirectory "$($VideoFile.BaseName).csv")
-    Write-Verbose $VideoFileSceneCSV
-    
-    $CSV = (New-TSPairsCSV -Path $VideoFileDirectory -Csv $VideoFileSceneCSV)
-    $TSPairs = ($CSV | ForEach-Object { , ($_.Start, $_.End)})
-
-    $PDFOutputDir = Join-Path $VideoFileDirectory "PDF Forms"
-
-    New-PDFWorksheets -ChapterFile $VideoPath -ClipTimes $TSPairs -PDFOutputDir $PDFOutputDir | Out-Null
-}
-
 function New-FrameImage
 {
-    #TODO New-FrameImage Documentation
     <#
         .SYNOPSIS
+        Generates an image of a still frame from a desired video at a desired timestamp.
 
         .DESCRIPTION
+        Uses ffmpeg to take a still frame from the desired video at the desired timestamp and output that file as a .png
 
         .PARAMETER Force
+        System.Management.Automation.SwitchParameter
+        Forces an overwrite of an existing .png.
 
         .PARAMETER OutputPNG
+        System.String
+        Defines an output file for the image. If not present, defaults to a "Scene Snapshots" folder adjacent to the desired video.
 
         .PARAMETER Timestamp
+        System.String
+        Timestamp at which to take an image within the video.
 
         .PARAMETER VideoPath
+        System.String
+        String representing the path to the desired video.
 
         .EXAMPLE
+        PS C:\> New-FrameImage -VideoPath "E:\OneDrive\HomeVideosProject\Chapters_7_ClipSplittingMetadataEmbedding\1994-02_1996-12_2\1994-02_1996-12_2.mp4" -Timestamp "11.67833" -OutputPNG "E:\OneDrive\HomeVideosProject\Chapters_7_ClipSplittingMetadataEmbedding\1994-02_1996-12_2\Scene Snapshots\11.67833.png" -Force
+        
 
-        .INPUTS
+            Directory: E:\OneDrive\HomeVideosProject\Chapters_7_ClipSplittingMetadataEmbedding\1994-02_1996-12_2\Scene Snapshots
+
+
+        Mode                LastWriteTime         Length Name
+        ----                -------------         ------ ----
+        -a----        8/20/2018   7:15 PM         415330 11.67833.png
 
         .OUTPUTS
+        System.IO.FileInfo
+        Object representing the newly created PNG.
     #>
     param(
         [switch]$Force,
@@ -538,11 +545,12 @@ function New-FrameImage
     Write-Verbose $FFMpegArgs
     try {Start-Process "C:\ProgramData\chocolatey\lib\ffmpeg\tools\ffmpeg\bin\ffmpeg.exe" -ArgumentList $FFMpegArgs -Wait}
     catch { Start-Process "/usr/local/bin/ffmpeg" -ArgumentList $FFMpegArgs -Wait}
+    Get-Item $OutputPNG
 }
 
-function New-PDFsFromXML
+function Convert-XMLScenesToPDFs
 {
-    #TODO New-PDFsFromXML Documentation
+    #TODO Convert-XMLScenesToPDFs Documentation
     <#
         .SYNOPSIS
 
