@@ -108,8 +108,10 @@ function Convert-PTSToTimeStamp
         [parameter(ValueFromPipeline)][System.Single[]]$PTS
     )
 
-    process{
-        foreach($PT in $PTS){
+    process
+    {
+        foreach ($PT in $PTS)
+        {
             $TimeSpan = [timespan]::fromseconds($(Convert-PTSToSecondsString $PTS))
             "{0:HH:mm:ss.fff}" -f ([datetime]$TimeSpan.Ticks)
         }
@@ -150,12 +152,14 @@ function Get-VideoDuration
     
     [CmdletBinding()]
     param(
-        [parameter(ValueFromPipeline,Mandatory=$true)][string[]]$VideoPath,
-        [parameter(Mandatory=$false)][switch]$AsXML
+        [parameter(ValueFromPipeline, Mandatory = $true)][string[]]$VideoPath,
+        [parameter(Mandatory = $false)][switch]$AsXML
     )
 
-    process{
-        foreach($Video in $VideoPath){
+    process
+    {
+        foreach ($Video in $VideoPath)
+        {
             $Duration = ffprobe -i $Video -show_entries format=duration -v quiet -of csv="p=0"
             $DurationTS = [timespan]::fromseconds($Duration)
             if ($AsXML) {$DurationTS.ToString("\P\0\0\Y\0\0\Mdd\D\Thh\Hmm\Mss\S")}
@@ -218,7 +222,7 @@ function Export-ClipsFromHomeVideoChapter
         $TimeEnd = $_.ClipLength.ToString("hh\:mm\:ss\.fff")
         $Timestamp = $_.DateTimeRecordedStart.ToString("s")
         $Title = $Description
-        $TitleSort = $Date+"_"+$_.DateTimeRecordedStart.ToString("hh\-mm\-ss")+"_"+$_.DateTimeRecordedEnd.ToString("hh\-mm\-ss")+"_"+$Description
+        $TitleSort = $Date + "_" + $_.DateTimeRecordedStart.ToString("hh\-mm\-ss") + "_" + $_.DateTimeRecordedEnd.ToString("hh\-mm\-ss") + "_" + $Description
 
         $FileOutput = Join-Path (Get-Item $OutputFolder).FullName "$($TitleSort -replace '"|\&','').mp4"
 
@@ -293,8 +297,10 @@ function Convert-PTSToSecondsString
     [CmdletBinding()]
     param([parameter(ValueFromPipeline)][System.Single[]]$PTS)
 
-    process{
-        foreach($PT in $PTS){
+    process
+    {
+        foreach ($PT in $PTS)
+        {
             [math]::round(($PT / 90000), 5).ToString("####.00000")
         }
     }
@@ -425,7 +431,8 @@ function Convert-Times
         [parameter(ValueFromPipeline)][string]$InputTime
     )
 
-    process{
+    process
+    {
         if ($InputTime -match '\d+\.\d+') { $OutputTime = [timeSpan]::FromSeconds([float]$InputTime) }
         else { $OutputTime = [timeSpan]$InputTime }
     
@@ -475,13 +482,13 @@ function New-TSPairsCSV
         [string]$Csv = (Join-Path (Get-Item $Path).FullName "$((Get-Item $Path).BaseName).csv")
     )
 
-    $Items = Get-ChildItem (Join-Path $Path "Scene Snapshots") -Name -Include *.png,*.jpg
+    $Items = Get-ChildItem (Join-Path $Path "Scene Snapshots") -Name -Include *.png, *.jpg
     $ItemsFloat = ($Items | ForEach-Object { [float]($_ -replace '(?:_\d|)(?:\.png|\.jpg)', '') } | Sort-Object)
     $SortedPairs = foreach ($i in (0..($ItemsFloat.Count - 1) | Where-Object {(($_ % 2) -eq 0) -or ($_ -eq 0)}))
     {
         (, ($ItemsFloat[$i], $ItemsFloat[$i + 1]))
     }
-    (1..$SortedPairs.Count) | ForEach-Object { [PSCustomObject]@{Index = $_; Start = $SortedPairs[$_-1][0]; End = $SortedPairs[$_-1][1]}} | Tee-Object -Variable "SortedPairsObject" | Export-Csv $Csv -NoTypeInformation
+    (1..$SortedPairs.Count) | ForEach-Object { [PSCustomObject]@{Index = $_; Start = $SortedPairs[$_ - 1][0]; End = $SortedPairs[$_ - 1][1]}} | Tee-Object -Variable "SortedPairsObject" | Export-Csv $Csv -NoTypeInformation
 
     $SortedPairsObject
 }
@@ -550,25 +557,33 @@ function New-FrameImage
 
 function Convert-XMLScenesToPDFs
 {
-    #TODO Convert-XMLScenesToPDFs Documentation
     <#
         .SYNOPSIS
+        Exports PDF worksheets from a HomeVideo_DVD XML database file.
 
         .DESCRIPTION
+        Exports PDF worksheets from a HomeVideo_DVD XML database file.
 
         .PARAMETER ChaptersToProcess
+        System.Int32[]
+        Array of integers representing chapter numbers to be converted into PDF worksheets.
         
-        .PARAMETER OutputPNG
+        .PARAMETER OutputDir
+        System.String
+        String representing the path of the desired output directory.
         
         .PARAMETER PDFTemplate
+        System.String
+        String representing the path of the PDF worksheet template (Defaults to a PDF file in the same directory as this module file.) 
         
         .PARAMETER XMLFile
+        System.String
+        String representing the path of the HomeVideo_DVD XML database file to be converted. 
 
         .EXAMPLE
+        PS C:\>Convert-XMLScenesToPDFs -ChaptersToProcess (1..6) -OutputDir "E:\OneDrive\HomeVideosProject\Chapters_7_ClipSplittingMetadataEmbedding\1994-02_1996-12_PDFs" -XMLFile "E:\OneDrive\HomeVideosProject\XML\1994-02_1996-12.xml"
+        Outputs PDF clip worksheets of chapters 1-6 in the XML file "1994-02_1996-12.xml" to the folder "1994-02_1996-12_PDFs"
 
-        .INPUTS
-
-        .OUTPUTS
     #>
     param(
         [int[]]$ChaptersToProcess,
@@ -580,10 +595,10 @@ function Convert-XMLScenesToPDFs
     [PDFForm]::PDFTemplate = $PDFTemplate
     $XML = [xml](Get-Content $XMLFile)
     $NewHomeVideoDVD = [HomeVideo_DVD]::new($XML)
-    if(!$ChaptersToProcess){ $ChaptersToProcess = (1..$NewHomeVideoDVD.DVDChapters.Count)}
+    if (!$ChaptersToProcess) { $ChaptersToProcess = (1..$NewHomeVideoDVD.DVDChapters.Count)}
 
     $ChaptersToProcess | ForEach-Object {
-        $NewHomeVideoDVD.DVDChapters[($_-1)].CreatePDFs(
+        $NewHomeVideoDVD.DVDChapters[($_ - 1)].CreatePDFs(
             "$OutputDir",
             $NewHomeVideoDVD.DVDLabel,
             $_
