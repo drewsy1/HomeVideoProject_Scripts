@@ -35,7 +35,9 @@
         #"New-PDFsFromScenes",
         "New-FrameImage",
         "Convert-XMLScenesToPDFs",
-        "Export-ClipsFromHomeVideoChapter"
+        "Export-ClipsFromHomeVideoChapter",
+        "Export-ffmpegClip",
+        "Write-MP4Metadata"
     )
 
     # Cmdlets to export from this module
@@ -52,7 +54,9 @@
         "New-TSPairsCSV"
         #"New-PDFsFromScenes",
         #"New-FrameImage"
-        "Export-ClipsFromHomeVideoChapter"
+        "Export-ClipsFromHomeVideoChapter",
+        "Export-ffmpegClip",
+        "Write-MP4Metadata"
     )
 
     # Variables to export from this module

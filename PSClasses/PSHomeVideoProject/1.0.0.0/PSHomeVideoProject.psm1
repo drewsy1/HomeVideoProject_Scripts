@@ -168,6 +168,131 @@ function Get-VideoDuration
     }
 }
 
+function Export-ffmpegClip
+{
+    <#
+        .SYNOPSIS
+        
+
+        .DESCRIPTION
+        
+
+        .PARAMETER TimeStart
+        
+
+        .PARAMETER TimeEnd
+        
+
+        .PARAMETER FileInput
+        
+
+        .PARAMETER FileOutput
+
+
+        .PARAMETER Timestamp
+        
+
+        .EXAMPLE
+        
+
+    #>
+
+    [CmdletBinding()]
+    param(
+        [string]$TimeStart,
+        [string]$TimeEnd,
+        [string]$FileInput,
+        [string]$FileOutput,
+        [string]$Timestamp
+    )
+
+    $ffmpegArgs = @(
+        "-y",
+        "-ss $TimeStart",
+        "-i `"$FileInput`"",
+        "-t $TimeEnd",
+        "-codec:a:0 copy",
+        "-vcodec copy",
+        "-timestamp `"$Timestamp`"",
+        "-metadata:s:a:0 language=eng"
+        "`"$FileOutput`""
+    )
+    Write-Verbose "      CurrentClip ffmpeg Arguments:"
+    $ffmpegArgs | ForEach-Object { Write-Verbose "       $_" }
+
+    Start-Process "ffmpeg" -ArgumentList $ffmpegArgs -Wait -NoNewWindow
+}
+
+function Write-MP4Metadata
+{
+    <#
+        .SYNOPSIS
+        
+
+        .DESCRIPTION
+        
+
+        .PARAMETER TimeStart
+        
+
+        .PARAMETER TimeEnd
+        
+
+        .PARAMETER FileInput
+        
+
+        .PARAMETER FileOutput
+
+
+        .PARAMETER Timestamp
+        
+
+        .EXAMPLE
+        
+
+    #>
+
+    [CmdletBinding()]
+    param(
+        [string]$CameraOperator,
+        [string]$ChapterNumber,
+        [string]$ChapterTotal,
+        [string]$ClipNumber,
+        [string]$ClipTotal,
+        [string]$Collections,
+        [string]$Comment,
+        [string]$Date,
+        [string]$Description,
+        [string]$FileInput,
+        [string]$FileOutput,
+        [string]$People,
+        [string]$Title,
+        [string]$TitleSort
+    )
+
+    $SetMP4Metadata = @(
+            "--File `"$FileOutput`"",
+            "--Title `"$Title`"",
+            "--Description `"$Description`"",
+            "--Comment `"$Comment`"",
+            "--Actors `"$People`"",
+            "--Director `"$CameraOperator`"",
+            "--Album `"$Collections`"",
+            "--TrackNumber $ClipNumber",
+            "--TrackTotal $ClipTotal",
+            "--DiscNumber $ChapterNumber",
+            "--DiscTotal $ChapterTotal",
+            "--Date `"$Date`"",
+            "--TitleSort `"$TitleSort`""
+        )
+        Write-Verbose "      CurrentClip SetMP4Metadata Arguments:"
+        $SetMP4Metadata | ForEach-Object { Write-Verbose "       $_" }
+        
+        $PythonArgs = "`"$SetMP4MetadataPy`" " + ($SetMP4Metadata -join " ")
+        Start-Process "python" -ArgumentList $PythonArgs -Wait -RedirectStandardError 'SetMP4Metadata.log'
+}
+
+
 function Export-ClipsFromHomeVideoChapter
 {
     <#
@@ -226,42 +351,9 @@ function Export-ClipsFromHomeVideoChapter
 
         $FileOutput = Join-Path (Get-Item $OutputFolder).FullName "$($TitleSort -replace '"|\&','').mp4"
 
-        $ffmpegArgs = @(
-            "-y",
-            "-ss $TimeStart",
-            "-i `"$FileInput`"",
-            "-t $TimeEnd",
-            "-codec:a:0 copy",
-            "-vcodec copy",
-            "-timestamp `"$Timestamp`"",
-            "-metadata:s:a:0 language=eng"
-            "`"$FileOutput`""
-        )
-        Write-Verbose "      CurrentClip ffmpeg Arguments:"
-        $ffmpegArgs | ForEach-Object { Write-Verbose "       $_" }
+        Export-ffmpegClip -TimeStart $TimeStart -TimeEnd $TimeEnd -FileInput $FileInput -FileOutput $FileOutput -Timestamp $Timestamp
+        Write-MP4Metadata -CameraOperator $CameraOperator -ChapterNumber $ChapterNumber -ChapterTotal $ChapterTotal -ClipNumber $ClipNumber -ClipTotal $ClipTotal -Collections $Collections -Comment $Comment -Date $Date -Description $Description -FileInput $FileInput -FileOutput $FileOutput -People $People -Title $Title -TitleSort $TitleSort
         
-        $SetMP4Metadata = @(
-            "--File `"$FileOutput`"",
-            "--Title `"$Title`"",
-            "--Description `"$Description`"",
-            "--Comment `"$Comment`"",
-            "--People `"$People`"",
-            "--CameraOperators `"$CameraOperator`"",
-            "--Collections `"$Collections`"",
-            "--ClipNumber $ClipNumber",
-            "--ClipTotal $ClipTotal",
-            "--ChapterNumber $ChapterNumber",
-            "--ChapterTotal $ChapterTotal",
-            "--Date `"$Date`"",
-            "--TitleSort `"$TitleSort`""
-        )
-        Write-Verbose "      CurrentClip SetMP4Metadata Arguments:"
-        $SetMP4Metadata | ForEach-Object { Write-Verbose "       $_" }
-        
-        $PythonArgs = "`"$SetMP4MetadataPy`" " + ($SetMP4Metadata -join " ")
-
-        Start-Process "ffmpeg" -ArgumentList $ffmpegArgs -Wait -NoNewWindow
-        Start-Process "python" -ArgumentList $PythonArgs -Wait -RedirectStandardError 'SetMP4Metadata.log'
         (Get-Item $FileOutput).CreationTime = $_.DateTimeRecordedStart
     }
 }
@@ -364,20 +456,22 @@ function Get-ffmpegSceneChanges
         }
         
         # For each PTS pair in $SceneFramesRoughTS, convert to a PSCustomObject and export all of them to a CSV file in the $VideoDirectory
-        $SceneFramesRoughTS | ForEach-Object { 
+        <#$SceneFramesRoughTS | ForEach-Object { 
             [PSCustomObject]@{
                 "Start" = (Convert-PTSToSecondsString $_[0]); 
                 "End"   = (Convert-PTSToSecondsString $_[1])
             } | Export-Csv -Path (Join-Path $VideoDirectory "$($VideoFile.BaseName).csv") -Append -NoTypeInformation 
-        }
+        }#>
 
         # For each PTS in each PTS pair in $SceneFramesRoughTS, use ffmpeg to extract a screenshot of the frame at the exact PTS timestamp and save it to $SceneSnapshotsDir
-        $SceneFramesRoughTS | ForEach-Object { $_[0], $_[1] | ForEach-Object {
+        $SceneFramesRoughTS | ForEach-Object { 
+            $_[0], $_[1] | ForEach-Object {
                 $StartPoint = (Convert-PTSToSecondsString $_)
                 $OutputFile = Join-Path $SceneSnapshotsDir "$(Convert-PTSToSecondsString $_).png"
                 try
-                { 
-                    ffmpeg -ss $StartPoint -i "$VideoFile" -vframes 1 -vsync drop -y $OutputFile
+                {
+                    New-FrameImage -VideoPath $VideoFile -Timestamp $StartPoint -OutputPNG $OutputFile
+                    #ffmpeg -ss $StartPoint -i "$VideoFile" -vframes 1 -vsync drop -y $OutputFile
                 }
                 catch
                 { 
