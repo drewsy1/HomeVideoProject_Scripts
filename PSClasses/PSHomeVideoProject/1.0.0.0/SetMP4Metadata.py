@@ -15,30 +15,29 @@ except ImportError:
 
 valid_output_extensions = ("mp4", "m4v")
 list_separator = ","
-collections_separator = "/"
+albums_separator = "/"
 
 
 class HomeVideoFile:
-    def __init__(self, title, description, comment, people, camera_operator, collections, clip_number, clip_total, chapter_number, chapter_total, date, title_sort, language='en', logger=None, original=None):
+    def __init__(self, title, description, comment, actors, director, album, track_number, track_total, disc_number, disc_total, date, title_sort, language='en', logger=None, original=None):
 
         if logger:
             self.log = logger
         else:
             self.log = logging.getLogger(__name__)
 
-        self.camera_operator = list_separator.join(camera_operator)
-        self.chapter_number = chapter_number
-        self.chapter_total = chapter_total
-        self.clip_number = clip_number
-        self.clip_total = clip_total
-        self.collections = collections
-        print(self.collections)
+        self.director = list_separator.join(director)
+        self.disc_number = disc_number
+        self.disc_total = disc_total
+        self.track_number = track_number
+        self.track_total = track_total
+        self.album = album
         self.comment = comment
         self.date = date
         self.description = description
         self.HD = None
         self.Original = original
-        self.people = list_separator.join(people)
+        self.actors = list_separator.join(actors)
         self.title = title
         self.title_sort = title_sort
         self.writer = None
@@ -57,14 +56,14 @@ class HomeVideoFile:
         video["----:com.apple.iTunes:iTunMOVI"] = self.xml
         video["desc"] = self.description  # Clip title as short description
         video["ldes"] = self.description  # Clip title as short description
-        # Chapter number/total as disk
-        video["disk"] = [(self.chapter_number, self.chapter_total)]
+        # Chapter number/total as disc
+        video["disc"] = [(self.disc_number, self.disc_total)]
         video["sonm"] = self.title_sort  # Episode number iTunes
-        video["trkn"] = [(self.clip_number, self.clip_total)
+        video["trkn"] = [(self.track_number, self.track_total)
                          ]  # Clip number/total as track
-        video["\xa9ART"] = self.people  # People as artists (delimated by ",")
-        # Collections as album name (delimated by "/")
-        video["\xa9alb"] = self.collections
+        video["\xa9ART"] = self.actors  # People as artists (delimated by ",")
+        # Album as album name (delimated by "/")
+        video["\xa9alb"] = self.album
         # "Disc [Disc Name], Chapter [Chapter], Clip [Clip]" as comment
         video["\xa9cmt"] = self.comment
         video["\xa9day"] = self.date  # Clip date
@@ -113,7 +112,7 @@ class HomeVideoFile:
 
         # Write actors
         output.write(castheader)
-        for name in self.people.split(list_separator):
+        for name in self.actors.split(list_separator):
             if name is not None:
                 output.write(
                     "<dict><key>name</key><string>%s</string></dict>\n" % name)
@@ -129,9 +128,9 @@ class HomeVideoFile:
             output.write(subfooter)
 
         # Write directors
-        if self.camera_operator is not None:
+        if self.director is not None:
             output.write(directorheader)
-            for name in self.camera_operator.split(list_separator):
+            for name in self.director.split(list_separator):
                 if name != "":
                     output.write(
                         "<dict><key>name</key><string>%s</string></dict>\n" % name)
@@ -148,15 +147,15 @@ def main():
     parser.add_argument("--Title", help="MP4 Title tag")
     parser.add_argument("--Description", help="MP4 description tag")
     parser.add_argument("--Comment", help="MP4 comment tag")
-    parser.add_argument("--People", nargs='+', help="MP4 People tag")
-    parser.add_argument("--CameraOperators", nargs='+',
-                        help="MP4 Camera operators tag")
-    parser.add_argument("--Collections", nargs='+', help="MP4 Collections tag")
-    parser.add_argument("--ClipNumber", type=int, help="MP4 Clip number tag")
-    parser.add_argument("--ClipTotal", type=int, help="MP4 Clip total tag")
-    parser.add_argument("--ChapterNumber", type=int,
-                        help="MP4 Chapter number tag")
-    parser.add_argument("--ChapterTotal", type=int,
+    parser.add_argument("--Actors", nargs='+', help="MP4 Actors tag")
+    parser.add_argument("--Director", nargs='+',
+                        help="MP4 director tag")
+    parser.add_argument("--Album", nargs='+', help="MP4 Album tag")
+    parser.add_argument("--TrackNumber", type=int, help="MP4 track number tag")
+    parser.add_argument("--TrackTotal", type=int, help="MP4 track total tag")
+    parser.add_argument("--DiscNumber", type=int,
+                        help="MP4 disc number tag")
+    parser.add_argument("--DiscTotal", type=int,
                         help="MP4 Chapter total tag")
     parser.add_argument("--Date", help="MP4 Date tag")
     parser.add_argument("--TitleSort", help="MP4 Sort title tag")
@@ -167,18 +166,18 @@ def main():
     Arg_Title = args.Title
     Arg_Description = args.Description
     Arg_Comment = args.Comment
-    Arg_People = args.People
-    Arg_CameraOperators = args.CameraOperators
-    Arg_Collections = collections_separator.join(args.Collections)
-    Arg_ClipNumber = int(args.ClipNumber)
-    Arg_ClipTotal = int(args.ClipTotal)
-    Arg_ChapterNumber = int(args.ChapterNumber)
-    Arg_ChapterTotal = int(args.ChapterTotal)
+    Arg_Actors = args.Actors
+    Arg_Director = args.Director
+    Arg_Album = albums_separator.join(args.Album)
+    Arg_TrackNumber = int(args.TrackNumber)
+    Arg_TrackTotal = int(args.TrackTotal)
+    Arg_DiscNumber = int(args.DiscNumber)
+    Arg_DiscNumberTotal = int(args.DiscTotal)
     Arg_Date = args.Date
     Arg_TitleSort = args.TitleSort
 
-    HomeVideoFile_instance = HomeVideoFile(Arg_Title, Arg_Description, Arg_Comment, Arg_People, Arg_CameraOperators,
-                                           Arg_Collections, Arg_ClipNumber, Arg_ClipTotal, Arg_ChapterNumber, Arg_ChapterTotal, Arg_Date, Arg_TitleSort)
+    HomeVideoFile_instance = HomeVideoFile(Arg_Title, Arg_Description, Arg_Comment, Arg_Actors, Arg_Director,
+                                           Arg_Album, Arg_TrackNumber, Arg_TrackTotal, Arg_DiscNumber, Arg_DiscNumberTotal, Arg_Date, Arg_TitleSort)
     if os.path.splitext(Arg_File)[1][1:] in valid_output_extensions:
         HomeVideoFile_instance.writeTags(Arg_File)
     else:
