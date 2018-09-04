@@ -9,6 +9,7 @@ class HomeVideo_Clip
     [string]$ClipStartString
     [string]$ClipEndString
     [string]$ClipLengthString
+    [string]$Reviewer
     [datetime]$DateTimeRecordedStart
     [datetime]$DateTimeRecordedEnd
     [string]$DateRecordedString
@@ -19,7 +20,7 @@ class HomeVideo_Clip
     [string[]]$Collections
     [string]$CameraOperator
     static [xml]$HomeVideo_ClipXML = @'
-<VideoClip ClipNumber="" xmlns="http://www2.latech.edu/~aew027/">
+<VideoClip ClipNumber="" xmlns="http://www2.latech.edu/~aew027/" ClipReviewer="">
     <ClipStart></ClipStart>
     <ClipEnd></ClipEnd>
     <ClipLength></ClipLength>
@@ -67,7 +68,7 @@ class HomeVideo_Clip
         $this.ClipLengthString = [HomeVideo_Clip]::LengthToString($this.ClipLength)
     }
 
-    HomeVideo_Clip([int]$ClipNum, [string]$ClipSta, [string]$ClipEn, [string]$DateRecord, [string]$TimeRecordedStar, [string]$TimeRecordedEn, [string]$Descript, [string[]]$Peop, [string[]]$Collect, [string]$CameraOperat ){
+    HomeVideo_Clip([int]$ClipNum, [string]$ClipSta, [string]$ClipEn, [string]$DateRecord, [string]$TimeRecordedStar, [string]$TimeRecordedEn, [string]$Descript, [string[]]$Peop, [string[]]$Collect, [string]$CameraOperat, [string]$Review ){
         $this.ClipNumber = $ClipNum
         $this.ClipStartString = $ClipSta
         $this.ClipEndString = $ClipEn
@@ -78,6 +79,7 @@ class HomeVideo_Clip
         $this.People = $Peop | Sort-Object
         $this.Collections = $Collect | Sort-Object
         $this.CameraOperator = $CameraOperat
+        $this.Reviewer = $Review
 
         $this.ClipStart = [HomeVideo_Clip]::StringToTimestamp($this.ClipStartString)
         $this.ClipEnd = [HomeVideo_Clip]::StringToTimestamp($this.ClipEndString)
@@ -112,6 +114,7 @@ class HomeVideo_Clip
         $this.ClipStartString = $Clip.ClipStart
         $this.ClipEndString = $Clip.ClipEnd
         $this.DateRecordedString = $Clip.DateRecorded
+        $this.Reviewer = $Clip.ClipReviewer
         $this.TimeRecordedStartString = $Clip.TimeRecordedStart
         $this.TimeRecordedEndString = $Clip.TimeRecordedEnd
         $this.Description = $Clip.Description
@@ -139,6 +142,8 @@ class HomeVideo_Clip
         if($this.ClipStart){ $ClipXML.VideoClip.ClipStart = $this.ClipStartString }
 
         if($this.ClipEndString){ $ClipXML.VideoClip.ClipEnd = $this.ClipEndString }
+
+        if($this.Reviewer){ $ClipXML.VideoClip.ClipReviewer = $this.Reviewer }
 
         if($this.ClipLengthString){ $ClipXML.VideoClip.ClipLength = $this.ClipLengthString }
         elseif ($this.ClipLength) {
@@ -257,7 +262,8 @@ class HomeVideo_Chapter
             $PDFClipForm.Description,
             $PDFClipForm.People,
             $PDFClipForm.Collections,
-            $PDFClipForm.CameraOperator
+            $PDFClipForm.CameraOperator,
+            $PDFClipForm.Reviewer
         )
         $this.AddChapterClip($NewClip)
     }
@@ -306,6 +312,7 @@ class HomeVideo_Chapter
 
                 $PDFForm.VideoNumber = $DVDName
                 $PDFForm.ChapterNumber = $ChapterNumber
+                $PDFForm.Reviewer = $this.ChapterClips[$_].Reviewer
 
                 $PDFForm.ClipForm1.ClipNumber = $this.ChapterClips[$_].ClipNumber
                 $PDFForm.ClipForm1.StartTimestampString = $this.ChapterClips[$_].ClipStartString
@@ -347,10 +354,11 @@ class HomeVideo_Chapter
 
             $PDFForm.VideoNumber = $DVDName
             $PDFForm.ChapterNumber = $ChapterNumber
+            $PDFForm.Reviewer = $LastClip.Reviewer
 
             $PDFForm.ClipForm1.ClipNumber = $LastClip.ClipNumber
-            $PDFForm.ClipForm1.StartTimestamp = $LastClip.ClipStartString
-            $PDFForm.ClipForm1.EndTimestamp = $LastClip.ClipEndString
+            $PDFForm.ClipForm1.StartTimestampString = $LastClip.ClipStartString
+            $PDFForm.ClipForm1.EndTimestampString = $LastClip.ClipEndString
             $PDFForm.ClipForm1.DateString = $LastClip.DateRecordedString
             $PDFForm.ClipForm1.StartTimeString = $LastClip.TimeRecordedStartString
             $PDFForm.ClipForm1.EndTimeString = $LastClip.TimeRecordedEndString

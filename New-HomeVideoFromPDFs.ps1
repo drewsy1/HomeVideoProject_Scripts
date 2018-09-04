@@ -2,10 +2,10 @@
 using module "C:\Users\dreww\src\Git\HomeVideoProject_Scripts\PSClasses\PSHomeVideoProject\1.0.0.0\Classes\HomeVideo.psm1"
 
 param(
-    [string]$DVDLabel = "1994-02_1996-12",
-    [int[]]$Chapters = (1..6),
+    [string]$DVDLabel = "1997-10_1998-03",
+    [int[]]$Chapters = (1..2),
     [string]$XMLFolder = "E:\OneDrive\HomeVideosProject\XML",
-    [string]$ChaptersFolder = "E:\OneDrive\HomeVideosProject\Chapters_7_ClipSplittingMetadataEmbedding"
+    [string]$ChaptersFolder = "E:\OneDrive\HomeVideosProject\Chapters_8_Completed"
 )
 
 $VerbosePreference = 2

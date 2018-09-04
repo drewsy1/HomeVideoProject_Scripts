@@ -28,15 +28,19 @@ class PDFClipForm
         "Zachary Westgate"  = $null;
     }
     [hashtable]$CollectionsHash = @{
+        "Baby Moments"                  = $null;
         "Birthday"                      = $null;
         "Blackmail"                     = $null;
         "Christmas"                     = $null;
+        "Church"                        = $null;
+        "Driving"                       = $null;
         "Easter"                        = $null;
         "Frost-McKay Cousins"           = $null;
         "Frost-McKay Family Gatherings" = $null;
-        "Grandma's House"                = $null;
+        "Grandma's House"               = $null;
         "Halloween"                     = $null;
         "Hot Springs"                   = $null;
+        "Misc. Holidays"                = $null;
         "Outside Playtime"              = $null;
         "Play/Performance"              = $null;
         "Playtime"                      = $null;
@@ -45,6 +49,7 @@ class PDFClipForm
         "Swimming"                      = $null;
         "Swinging"                      = $null;
         "Thatchers"                     = $null;
+        "Trips/Vacations"               = $null;
         "Westgate Cousins"              = $null;
         "Westgate Family Gatherings"    = $null;
     }
@@ -52,6 +57,7 @@ class PDFClipForm
     [timespan]$EndTimestamp
     [string]$Description
     [string]$CameraOperator
+    [string]$Reviewer
     [string[]]$People
     [string[]]$Collections
     [int]$FormClipNumber
@@ -60,6 +66,7 @@ class PDFClipForm
     [datetime]$EndDateTime
     CreatePDFClipForm([object]$PDFReader, [int]$FormClipNumber)
     {
+        $this.Reviewer = $PDFReader.AcroFields.GetField("Reviewer")
         $this.ClipNumber = [int]($PDFReader.AcroFields.GetField("ClipNumber_$FormClipNumber"))
         $this.StartTimestampString = $PDFReader.AcroFields.GetField("StartTimestamp_$FormClipNumber")
         $this.EndTimestampString = $PDFReader.AcroFields.GetField("EndTimestamp_$FormClipNumber")
@@ -82,15 +89,19 @@ class PDFClipForm
             "Zachary Westgate"  = [bool]($PDFReader.AcroFields.GetField("ZacharyWestgate_$FormClipNumber"));
         }
         $this.CollectionsHash = @{
+            "Baby Moments"                  = [bool]($PDFReader.AcroFields.GetField("BabyMoments_$FormClipNumber"));
             "Birthday"                      = [bool]($PDFReader.AcroFields.GetField("Birthday_$FormClipNumber"));
             "Blackmail"                     = [bool]($PDFReader.AcroFields.GetField("Blackmail_$FormClipNumber"));
             "Christmas"                     = [bool]($PDFReader.AcroFields.GetField("Christmas_$FormClipNumber"));
+            "Church"                        = [bool]($PDFReader.AcroFields.GetField("Church_$FormClipNumber"));
+            "Driving"                       = [bool]($PDFReader.AcroFields.GetField("Driving_$FormClipNumber"));
             "Easter"                        = [bool]($PDFReader.AcroFields.GetField("Easter_$FormClipNumber"));
             "Frost-McKay Cousins"           = [bool]($PDFReader.AcroFields.GetField("FrostMcKayCousins_$FormClipNumber"));
             "Frost-McKay Family Gatherings" = [bool]($PDFReader.AcroFields.GetField("FrostMcKayFamilyGatherings_$FormClipNumber"));
             "Grandma's House"                = [bool]($PDFReader.AcroFields.GetField("GrandmasHouse_$FormClipNumber"));
             "Halloween"                     = [bool]($PDFReader.AcroFields.GetField("Halloween_$FormClipNumber"));
             "Hot Springs"                   = [bool]($PDFReader.AcroFields.GetField("HotSprings_$FormClipNumber"));
+            "Misc. Holidays"                = [bool]($PDFReader.AcroFields.GetField("MiscHolidays_$FormClipNumber"));
             "Outside Playtime"              = [bool]($PDFReader.AcroFields.GetField("OutsidePlaytime_$FormClipNumber"));
             "Play/Performance"              = [bool]($PDFReader.AcroFields.GetField("PlayPerformance_$FormClipNumber"));
             "Playtime"                      = [bool]($PDFReader.AcroFields.GetField("Playtime_$FormClipNumber"));
@@ -99,6 +110,7 @@ class PDFClipForm
             "Swimming"                      = [bool]($PDFReader.AcroFields.GetField("Swimming_$FormClipNumber"));
             "Swinging"                      = [bool]($PDFReader.AcroFields.GetField("Swinging_$FormClipNumber"));
             "Thatchers"                     = [bool]($PDFReader.AcroFields.GetField("Thatchers_$FormClipNumber"));
+            "Trips/Vacations"               = [bool]($PDFReader.AcroFields.GetField("TripsVacations_$FormClipNumber"));
             "Westgate Cousins"              = [bool]($PDFReader.AcroFields.GetField("WestgateCousins_$FormClipNumber"));
             "Westgate Family Gatherings"    = [bool]($PDFReader.AcroFields.GetField("WestgateFamilyGatherings_$FormClipNumber"));
         }
@@ -111,12 +123,12 @@ class PDFClipForm
         $this.Collections = ($this.CollectionsHash.Keys | Where-Object { $this.CollectionsHash."$_" })
     }
 
-    PDFClipForm ([string]$PDF, [int]$FormClipNumber = 1)
+    PDFClipForm ([string]$PDFPath, [int]$FormClipNumber = 1)
     {
         $this.FormClipNumber = $FormClipNumber
 
         Add-Type -Path [PDFClipForm]::iTextSharpDLLPath
-        $PDFReader = New-Object iTextSharp.text.pdf.pdfreader -ArgumentList (Get-Item $PDF).FullName
+        $PDFReader = New-Object iTextSharp.text.pdf.pdfreader -ArgumentList (Get-Item $PDFPath).FullName
 
         $this.CreatePDFClipForm($PDFReader, $FormClipNumber)
 
@@ -208,10 +220,10 @@ class PDFForm
 
     }
 
-    PDFForm ([string]$PDF)
+    PDFForm ([string]$PDFPath)
     {
         Add-Type -Path ([PDFForm]::iTextSharpDLLPath)
-        $PDFReader = New-Object iTextSharp.text.pdf.pdfreader -ArgumentList (Get-Item $PDF).FullName
+        $PDFReader = New-Object iTextSharp.text.pdf.pdfreader -ArgumentList (Get-Item $PDFPath).FullName
 
         $this.Reviewer = $PDFReader.AcroFields.GetField("Reviewer")
         $this.VideoNumber = $PDFReader.AcroFields.GetField("VideoNumber")
@@ -250,15 +262,19 @@ class PDFForm
                     "MaryWestgate_$CurrentFormClipNumber"               = $_.PeopleHash."Mary Westgate";
                     "MeridethWestgate_$CurrentFormClipNumber"           = $_.PeopleHash."Merideth Westgate";
                     "ZacharyWestgate_$CurrentFormClipNumber"            = $_.PeopleHash."Zachary Westgate";
+                    "BabyMoments_$CurrentFormClipNumber"                = $_.PeopleHash."Baby Moments";
                     "Birthday_$CurrentFormClipNumber"                   = $_.CollectionsHash."Birthday";
                     "Blackmail_$CurrentFormClipNumber"                  = $_.CollectionsHash."Blackmail";
                     "Christmas_$CurrentFormClipNumber"                  = $_.CollectionsHash."Christmas";
+                    "Church_$CurrentFormClipNumber"                     = $_.CollectionsHash."Church";
+                    "Driving_$CurrentFormClipNumber"                     = $_.CollectionsHash."Driving";
                     "Easter_$CurrentFormClipNumber"                     = $_.CollectionsHash."Easter";
                     "FrostMcKayCousins_$CurrentFormClipNumber"          = $_.CollectionsHash."Frost-McKay Cousins";
                     "FrostMcKayFamilyGatherings_$CurrentFormClipNumber" = $_.CollectionsHash."Frost-McKay Family Gatherings";
                     "GrandmasHouse_$CurrentFormClipNumber"              = $_.CollectionsHash."Grandma's House";
                     "Halloween_$CurrentFormClipNumber"                  = $_.CollectionsHash."Halloween";
                     "HotSprings_$CurrentFormClipNumber"                 = $_.CollectionsHash."Hot Springs";
+                    "MiscHolidays_$CurrentFormClipNumber"               = $_.CollectionsHash."Misc. Holidays"
                     "OutsidePlaytime_$CurrentFormClipNumber"            = $_.CollectionsHash."Outside Playtime";
                     "PlayPerformance_$CurrentFormClipNumber"            = $_.CollectionsHash."Play/Performance";
                     "Playtime_$CurrentFormClipNumber"                   = $_.CollectionsHash."Playtime";
@@ -267,6 +283,7 @@ class PDFForm
                     "Swimming_$CurrentFormClipNumber"                   = $_.CollectionsHash."Swimming";
                     "Swinging_$CurrentFormClipNumber"                   = $_.CollectionsHash."Swinging";
                     "Thatchers_$CurrentFormClipNumber"                  = $_.CollectionsHash."Thatchers";
+                    "TripsVacations_$CurrentFormClipNumber"             = $_.CollectionsHash."Trips/Vacations"
                     "WestgateCousins_$CurrentFormClipNumber"            = $_.CollectionsHash."Westgate Cousins";
                     "WestgateFamilyGatherings_$CurrentFormClipNumber"   = $_.CollectionsHash."Westgate Family Gatherings";
                 }

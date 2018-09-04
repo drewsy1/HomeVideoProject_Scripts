@@ -58,6 +58,7 @@
             <xs:element name="Collections" type="CollectionsForm" />
         </xs:sequence>
         <xs:attribute name="ClipNumber" type="xs:integer" use="required" />
+        <xs:attribute name="ClipReviewer" type="xs:string" />
     </xs:complexType>
 
     <xs:complexType name="PeopleForm">

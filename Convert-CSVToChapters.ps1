@@ -3,9 +3,9 @@ using module "C:\Users\dreww\src\Git\HomeVideoProject_Scripts\PSClasses\PSHomeVi
 
 param(
     [string]$XMLFolder = "E:\OneDrive\HomeVideosProject\XML",
-    [string]$DVDLabel = "1999-11_2000-04",
-    [int[]]$Chapters = (1,2),
-    [string]$ChaptersFolder = "E:\OneDrive\HomeVideosProject\Chapters_5_GeneratePDFs"
+    [string]$DVDLabel = "2001-02_2001-05",
+    [int[]]$Chapters = (1),
+    [string]$ChaptersFolder = "E:\OneDrive\HomeVideosProject\Chapters_6_RetrieveMetadata"
 )
 
 $VerbosePreference = 2
